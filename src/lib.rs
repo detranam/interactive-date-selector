@@ -1,24 +1,8 @@
 use chrono::{TimeDelta, prelude::*};
-use clap::Parser;
 use console::{Key, Term};
-use std::{io, process::Command};
+use std::process::Command;
 
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    #[clap(long, short, action)]
-    interactive_mode: bool,
-
-    /// Take the amount of pages required to read
-    #[clap(long, short, default_value_t = 0)]
-    pages: u32,
-
-    /// Take the amount of days required to complete the reading
-    #[clap(long, short, default_value_t = 0)]
-    days: u32,
-}
-
-fn clear_screen() {
+pub fn clear_screen() {
     if Command::new("cls").status().is_err() {
         Command::new("clear").status().unwrap();
     }
@@ -106,7 +90,7 @@ fn print_month(highlight_day: DateTime<Utc>) {
     }
 }
 
-fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>) -> DateTime<Utc> {
+pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>) -> DateTime<Utc> {
     let term = Term::stdout();
     let one_day: TimeDelta = TimeDelta::days(1);
     let one_week: TimeDelta = TimeDelta::weeks(1);
@@ -131,72 +115,4 @@ fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>) ->
             Err(e) => eprintln!("Error: {}", e),
         }
     }
-}
-
-fn print_days_per_page(pages: u32, days: u32) {
-    let pages_per_day = pages as f32 / days as f32;
-    print!("You need to read {} pages per day", (pages_per_day.floor()));
-    if pages_per_day.floor() != pages_per_day {
-        print!(", and {} on the last day", (pages_per_day.ceil() as u32));
-    }
-    println!();
-}
-
-fn create_date_str(date: DateTime<Utc>) -> String {
-    format!("{}/{}/{}", date.month(), date.day(), date.year())
-}
-
-fn main() {
-    let args = Args::parse();
-    if args.interactive_mode {
-        println!("Interactive mode not enabled yet!");
-        let starting_date = interactive_date(None, None);
-        let starting_date_str =
-            "Starting date: ".to_owned() + &create_date_str(starting_date).to_string();
-        let ending_date = interactive_date(Some(starting_date), Some(starting_date_str.as_str()));
-        let ending_date_str =
-            "Ending date: ".to_owned() + &create_date_str(ending_date).to_string();
-        clear_screen();
-        println!("{}", starting_date_str);
-        println!("{}", ending_date_str);
-
-        println!("\nEnter pages required to be read: ");
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to get page count");
-        let page_count = input.trim().parse().expect("Failed to parse input as int");
-        print_days_per_page(
-            page_count,
-            (ending_date - starting_date)
-                .num_days()
-                .try_into()
-                .expect("Failed to parse ending and starting day diff"),
-        );
-
-        // clear_screen();
-        // print_month();
-    } else {
-        if args.pages == 0 {
-            eprintln!("Error: Pages must be greater than 0");
-            return;
-        }
-        if args.days == 0 {
-            eprintln!("Error: Days must be greater than 0");
-            return;
-        }
-        let pages_per_day = args.pages as f32 / args.days as f32;
-        print!("You need to read {} pages per day", (pages_per_day.floor()));
-        if pages_per_day.floor() != pages_per_day {
-            print!(", and {} on the last day", (pages_per_day.ceil() as u32));
-        }
-        println!();
-    }
-    // let term = Term::stdout();
-    // println!("Type a character:");
-
-    // match term.read_key() {
-    //     Ok(c) => println!("You pressed: {}", c),
-    //     Err(e) => eprintln!("Error: {}", e),
-    // }
 }
