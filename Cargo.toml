@@ -3,7 +3,11 @@ name = "interactive-date-selector"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "date_selector"
+path = "src/lib.rs"
+
 [dependencies]
 chrono = "0.4.45"
-clap = { version = "4.6.6", features = ["derive"] }
 console = "0.16.4"
+
