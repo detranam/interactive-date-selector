@@ -8,7 +8,8 @@ pub fn clear_screen() {
     }
 }
 
-fn print_days(day_array: &[[u32; 7]], selected_day: u32) {
+fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
+    let mut print_string = String::with_capacity(40*5);
     let mut empty_print: &str; // = "     ";
     let mut day_index_in_week = 0;
     let mut printchar = "|";
@@ -26,7 +27,8 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) {
                 } else {
                     empty_print = "     "
                 }
-                print!("{}{}", empty_print, printchar);
+                print_string.push_str(format!("{}{}",empty_print,printchar).as_str());
+                // print!("{}{}", empty_print, printchar);
             } else {
                 let digit_count = day.to_string().len();
                 let modified_spaces = match digit_count {
@@ -37,17 +39,21 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) {
                     }
                 };
                 if *day == selected_day {
-                    print!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar);
+                    print_string.push_str(format!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar).as_str());
+                    // print!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar);
                 } else {
-                    print!("{}{}{}", *day, modified_spaces, printchar);
+                    print_string.push_str(format!("{}{}{}", *day, modified_spaces, printchar).as_str());
+                    // print!("{}{}{}", *day, modified_spaces, printchar);
                 }
             }
             day_index_in_week += 1;
         }
         day_index_in_week = 0;
         printchar = "|";
-        println!()
+        print_string.push('\n');
+        // println!()
     }
+    print_string
 }
 
 fn print_month(highlight_day: DateTime<Utc>) {
@@ -71,7 +77,7 @@ fn print_month(highlight_day: DateTime<Utc>) {
             // go to next week
             if starting_week == 4 {
                 //end of month
-                print_days(&day_array, highlight_day.day());
+                print!("{}",print_days(&day_array, highlight_day.day()));
                 return;
             }
             starting_week += 1;
@@ -83,7 +89,7 @@ fn print_month(highlight_day: DateTime<Utc>) {
                 .unwrap()
                 .into()
         {
-            print_days(&day_array, highlight_day.day());
+            print!("{}",print_days(&day_array, highlight_day.day()));
             return;
         }
         first_day_of_month += one_day;
