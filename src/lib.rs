@@ -2,6 +2,8 @@ use chrono::{TimeDelta, prelude::*};
 use console::{Key, Term};
 use std::process::Command;
 
+static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat";
+
 pub fn clear_screen() {
     if Command::new("cls").status().is_err() {
         Command::new("clear").status().unwrap();
@@ -9,7 +11,7 @@ pub fn clear_screen() {
 }
 
 fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
-    let mut print_string = String::with_capacity(40*5);
+    let mut print_string = String::with_capacity(DAY_OF_WEEK_STRING.len() * 5);
     let mut empty_print: &str; // = "     ";
     let mut day_index_in_week = 0;
     let mut printchar = "|";
@@ -27,8 +29,7 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
                 } else {
                     empty_print = "     "
                 }
-                print_string.push_str(format!("{}{}",empty_print,printchar).as_str());
-                // print!("{}{}", empty_print, printchar);
+                print_string.push_str(format!("{}{}", empty_print, printchar).as_str());
             } else {
                 let digit_count = day.to_string().len();
                 let modified_spaces = match digit_count {
@@ -39,11 +40,13 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
                     }
                 };
                 if *day == selected_day {
-                    print_string.push_str(format!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar).as_str());
-                    // print!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar);
+                    // Highlight the selected day
+                    print_string.push_str(
+                        format!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar).as_str(),
+                    );
                 } else {
-                    print_string.push_str(format!("{}{}{}", *day, modified_spaces, printchar).as_str());
-                    // print!("{}{}{}", *day, modified_spaces, printchar);
+                    print_string
+                        .push_str(format!("{}{}{}", *day, modified_spaces, printchar).as_str());
                 }
             }
             day_index_in_week += 1;
@@ -51,18 +54,19 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
         day_index_in_week = 0;
         printchar = "|";
         print_string.push('\n');
-        // println!()
     }
     print_string
 }
 
-fn print_month(highlight_day: DateTime<Utc>) {
-    // let highlight_day = Utc::now();
+fn print_month(highlight_day: DateTime<Utc>) -> String {
+    let mut month_string = String::with_capacity(DAY_OF_WEEK_STRING.len() * 6);
     let thismonth =
         Month::try_from(u8::try_from(highlight_day.month()).unwrap()).unwrap_or(Month::January);
-    println!("{:?}", thismonth);
-    let days_string = " Sun | Mon | Tue | Wed | Thu | Fri | Sat";
-    println!("{}", days_string);
+    month_string.push_str(format!("{:?}\n", thismonth).as_str());
+    // println!("{:?}", thismonth);
+    //month_string.push_str(format!().as_str());
+    month_string.push_str(format!("{}\n", DAY_OF_WEEK_STRING).as_str());
+    // println!("{}", DAY_OF_WEEK_STRING);
     let mut day_array = [[0; 7]; 5];
     let mut starting_week: usize = 0;
     let one_day: TimeDelta = TimeDelta::days(1);
@@ -77,20 +81,27 @@ fn print_month(highlight_day: DateTime<Utc>) {
             // go to next week
             if starting_week == 4 {
                 //end of month
-                print!("{}",print_days(&day_array, highlight_day.day()));
-                return;
+                month_string.push_str(
+                    print_days(&day_array, highlight_day.day())
+                        .to_string()
+                        .as_str(),
+                );
+                return month_string;
             }
             starting_week += 1;
         }
-        // make 'today' into 'tomorrow'
         if first_day_of_month.day()
             == thismonth
                 .num_days(first_day_of_month.year())
                 .unwrap()
                 .into()
         {
-            print!("{}",print_days(&day_array, highlight_day.day()));
-            return;
+            month_string.push_str(
+                print_days(&day_array, highlight_day.day())
+                    .to_string()
+                    .as_str(),
+            );
+            return month_string;
         }
         first_day_of_month += one_day;
     }
@@ -107,7 +118,7 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
             println!("{}", preamble)
         }
 
-        print_month(highlighted_date);
+        print!("{}", print_month(highlighted_date));
         match term.read_key() {
             Ok(k) => match k {
                 Key::ArrowUp => highlighted_date -= one_week,
@@ -121,4 +132,19 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
             Err(e) => eprintln!("Error: {}", e),
         }
     }
+}
+
+#[test]
+fn test_print_month() {
+    // Pick a leap year month for fun, to ensure correct dates are printed
+    let leap_year_date = Utc.with_ymd_and_hms(2020, 2, 1, 1, 1, 1).unwrap();
+    let month_str = print_month(leap_year_date);
+
+    // Ensure month and leap year day are printed
+    assert!(month_str.contains("29"));
+    assert!(month_str.contains("February"));
+
+    // Ensure separator and a normal (non leap) date print
+    assert!(month_str.contains("11"));
+    assert!(month_str.contains("Wed"));
 }
