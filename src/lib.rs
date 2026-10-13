@@ -63,10 +63,7 @@ fn print_month(highlight_day: DateTime<Utc>) -> String {
     let thismonth =
         Month::try_from(u8::try_from(highlight_day.month()).unwrap()).unwrap_or(Month::January);
     month_string.push_str(format!("{:?}\n", thismonth).as_str());
-    // println!("{:?}", thismonth);
-    //month_string.push_str(format!().as_str());
     month_string.push_str(format!("{}\n", DAY_OF_WEEK_STRING).as_str());
-    // println!("{}", DAY_OF_WEEK_STRING);
     let mut day_array = [[0; 7]; 5];
     let mut starting_week: usize = 0;
     let one_day: TimeDelta = TimeDelta::days(1);
