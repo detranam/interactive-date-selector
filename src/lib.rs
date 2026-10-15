@@ -125,8 +125,10 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
             println!("{}", preamble)
         }
         print!("{}", print_month(highlighted_date, error_message));
+        // Flush to ensure nothing is waiting in the buffer before we get key input
         let _ = io::stdout().flush();
-        error_message = None; // Clear error message 
+        // Reset the error message before we get user key input
+        error_message = None;
         match term.read_key() {
             Ok(k) => match k {
                 Key::ArrowUp => highlighted_date -= one_week,
@@ -143,6 +145,7 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
         }
     }
 }
+
 #[test]
 fn test_centered_month() {
     let centered_month_str = print_month_name_centered(Month::May);
