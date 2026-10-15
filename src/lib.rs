@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat";
+static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat\n";
 
 pub fn clear_screen() {
     if Command::new("cls").status().is_err() {
@@ -73,12 +73,12 @@ fn print_month_name_centered(current_month: Month) -> String {
     )
 }
 fn print_month(highlight_day: DateTime<Utc>, error_message: Option<String>) -> String {
-    let error_string_to_print = error_message.unwrap_or(String::new());
+    let error_string_to_print = error_message.unwrap_or_default();
     let mut month_string = String::with_capacity(DAY_OF_WEEK_STRING.len() * 6);
     let thismonth =
         Month::try_from(u8::try_from(highlight_day.month()).unwrap()).unwrap_or(Month::January);
     month_string.push_str(print_month_name_centered(thismonth).as_str());
-    month_string.push_str(format!("{}\n", DAY_OF_WEEK_STRING).as_str());
+    month_string.push_str(DAY_OF_WEEK_STRING);
     let mut day_array = [[0; 7]; 5];
     let mut starting_week: usize = 0;
     let one_day: TimeDelta = TimeDelta::days(1);
@@ -136,13 +136,25 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
                 Key::Enter => return highlighted_date,
                 Key::Escape => return Utc::now(),
                 _ => {
-                    //\x1b[7m{}\x1b[0m
-                    error_message = Some(format!("\x1b[33mError parsing key '{:?}'\x1b[0m.", k));
+                    error_message = Some(format!("\x1b[33mError parsing key '{:?}'\x1b[0m.\n", k));
                 }
             },
             Err(e) => eprintln!("Error reading from key with read_key: {}", e),
         }
     }
+}
+#[test]
+fn test_centered_month() {
+    let centered_month_str = print_month_name_centered(Month::May);
+
+    // Ensure the header has all desired pieces
+    assert!(centered_month_str.contains("May"));
+    assert!(centered_month_str.contains("="));
+    assert!(centered_month_str.contains("\n"));
+
+    // Ensure it is the correct length- note the +2 to account for the desired single '='
+    // overlap on the sides of the month
+    assert!(centered_month_str.trim().len() == DAY_OF_WEEK_STRING.trim().len() + 2);
 }
 
 #[test]
