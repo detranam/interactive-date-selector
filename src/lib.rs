@@ -60,7 +60,7 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
 
 fn print_month_name_centered(current_month: Month) -> String {
     let total_characters_available = DAY_OF_WEEK_STRING.len();
-    let month_str = format!("{:?}", current_month);
+    let month_str = format!(" {:?} ", current_month);
     let total_free_whitespace = (total_characters_available - month_str.len()) as f32 / 2.0;
     format!(
         "{}{}{}\n",
