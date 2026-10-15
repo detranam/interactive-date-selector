@@ -7,7 +7,11 @@ fn print_days_per_page(pages: u32, days: u32) {
     let pages_per_day = pages as f32 / days as f32;
     print!("You need to read {} pages per day", (pages_per_day.floor()));
     if pages_per_day.floor() != pages_per_day {
-        print!(", and {} on the last day", (pages_per_day.ceil() as u32));
+        let fractional_days = pages_per_day - pages_per_day.floor();
+        print!(
+            ", and {} on the last day",
+            ((days as f32) * fractional_days).ceil()
+        );
     }
     println!();
 }
