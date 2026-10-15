@@ -33,8 +33,8 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
             } else {
                 let digit_count = day.to_string().len();
                 let modified_spaces = match digit_count {
-                    1 => "    ",
-                    2 => "   ",
+                    1 => "   ",
+                    2 => "  ",
                     _ => {
                         panic!("Digit count ??");
                     }
@@ -42,11 +42,11 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
                 if *day == selected_day {
                     // Highlight the selected day
                     print_string.push_str(
-                        format!("\x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar).as_str(),
+                        format!(" \x1b[7m{}\x1b[0m{}{}", *day, modified_spaces, printchar).as_str(),
                     );
                 } else {
                     print_string
-                        .push_str(format!("{}{}{}", *day, modified_spaces, printchar).as_str());
+                        .push_str(format!(" {}{}{}", *day, modified_spaces, printchar).as_str());
                 }
             }
             day_index_in_week += 1;
@@ -58,11 +58,23 @@ fn print_days(day_array: &[[u32; 7]], selected_day: u32) -> String {
     print_string
 }
 
+fn print_month_name_centered(current_month: Month) -> String {
+    let total_characters_available = DAY_OF_WEEK_STRING.len();
+    let month_str = format!("{:?}", current_month);
+    let total_free_whitespace = (total_characters_available - month_str.len()) as f32 / 2.0;
+    format!(
+        "{}{}{}\n",
+        "=".repeat(total_free_whitespace.floor() as usize),
+        month_str,
+        "=".repeat(total_free_whitespace.ceil() as usize)
+    )
+}
 fn print_month(highlight_day: DateTime<Utc>) -> String {
     let mut month_string = String::with_capacity(DAY_OF_WEEK_STRING.len() * 6);
     let thismonth =
         Month::try_from(u8::try_from(highlight_day.month()).unwrap()).unwrap_or(Month::January);
-    month_string.push_str(format!("{:?}\n", thismonth).as_str());
+    month_string.push_str(print_month_name_centered(thismonth).as_str());
+    // month_string.push_str(format!("{:?}\n", thismonth).as_str());
     month_string.push_str(format!("{}\n", DAY_OF_WEEK_STRING).as_str());
     let mut day_array = [[0; 7]; 5];
     let mut starting_week: usize = 0;
