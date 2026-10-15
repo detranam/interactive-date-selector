@@ -1,6 +1,9 @@
 use chrono::{TimeDelta, prelude::*};
 use console::{Key, Term};
-use std::process::Command;
+use std::{
+    io::{self, Write},
+    process::Command,
+};
 
 static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat";
 
@@ -69,12 +72,12 @@ fn print_month_name_centered(current_month: Month) -> String {
         "=".repeat(total_free_whitespace.ceil() as usize)
     )
 }
-fn print_month(highlight_day: DateTime<Utc>) -> String {
+fn print_month(highlight_day: DateTime<Utc>, error_message: Option<String>) -> String {
+    let error_string_to_print = error_message.unwrap_or(String::new());
     let mut month_string = String::with_capacity(DAY_OF_WEEK_STRING.len() * 6);
     let thismonth =
         Month::try_from(u8::try_from(highlight_day.month()).unwrap()).unwrap_or(Month::January);
     month_string.push_str(print_month_name_centered(thismonth).as_str());
-    // month_string.push_str(format!("{:?}\n", thismonth).as_str());
     month_string.push_str(format!("{}\n", DAY_OF_WEEK_STRING).as_str());
     let mut day_array = [[0; 7]; 5];
     let mut starting_week: usize = 0;
@@ -90,11 +93,8 @@ fn print_month(highlight_day: DateTime<Utc>) -> String {
             // go to next week
             if starting_week == 4 {
                 //end of month
-                month_string.push_str(
-                    print_days(&day_array, highlight_day.day())
-                        .to_string()
-                        .as_str(),
-                );
+                month_string.push_str(print_days(&day_array, highlight_day.day()).as_str());
+                month_string.push_str(error_string_to_print.as_str());
                 return month_string;
             }
             starting_week += 1;
@@ -105,11 +105,8 @@ fn print_month(highlight_day: DateTime<Utc>) -> String {
                 .unwrap()
                 .into()
         {
-            month_string.push_str(
-                print_days(&day_array, highlight_day.day())
-                    .to_string()
-                    .as_str(),
-            );
+            month_string.push_str(print_days(&day_array, highlight_day.day()).as_str());
+            month_string.push_str(error_string_to_print.as_str());
             return month_string;
         }
         first_day_of_month += one_day;
@@ -121,13 +118,15 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
     let one_day: TimeDelta = TimeDelta::days(1);
     let one_week: TimeDelta = TimeDelta::weeks(1);
     let mut highlighted_date = begindate.unwrap_or(Utc::now());
+    let mut error_message: Option<String> = None;
     loop {
         clear_screen();
         if let Some(preamble) = preamble {
             println!("{}", preamble)
         }
-
-        print!("{}", print_month(highlighted_date));
+        print!("{}", print_month(highlighted_date, error_message));
+        let _ = io::stdout().flush();
+        error_message = None; // Clear error message 
         match term.read_key() {
             Ok(k) => match k {
                 Key::ArrowUp => highlighted_date -= one_week,
@@ -136,9 +135,12 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
                 Key::ArrowRight => highlighted_date += one_day,
                 Key::Enter => return highlighted_date,
                 Key::Escape => return Utc::now(),
-                _ => panic!("Ahh bad key!"),
+                _ => {
+                    //\x1b[7m{}\x1b[0m
+                    error_message = Some(format!("\x1b[33mError parsing key '{:?}'\x1b[0m.", k));
+                }
             },
-            Err(e) => eprintln!("Error: {}", e),
+            Err(e) => eprintln!("Error reading from key with read_key: {}", e),
         }
     }
 }
@@ -147,7 +149,7 @@ pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>
 fn test_print_month() {
     // Pick a leap year month for fun, to ensure correct dates are printed
     let leap_year_date = Utc.with_ymd_and_hms(2020, 2, 1, 1, 1, 1).unwrap();
-    let month_str = print_month(leap_year_date);
+    let month_str = print_month(leap_year_date, None);
 
     // Ensure month and leap year day are printed
     assert!(month_str.contains("29"));
