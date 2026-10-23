@@ -1,7 +1,15 @@
 use chrono::prelude::*;
 use std::io;
+use std::process::Command;
 
-use date_selector::{clear_screen, interactive_date};
+use date_selector::{interactive_date};
+
+// Clear the console
+fn clear_screen() {
+    if Command::new("cls").status().is_err() {
+        Command::new("clear").status().unwrap();
+    }
+}
 
 fn print_days_per_page(pages: u32, days: u32) {
     let pages_per_day = pages as f32 / days as f32;

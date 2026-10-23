@@ -1,6 +1,6 @@
-///! # Date Selector
-/// 
-/// This crate provides a cross-platform, CLI-centric, interactive way for a user to select a date.
+//! # Date Selector
+//! 
+//! This crate provides a cross-platform, CLI-centric, interactive way for a user to select a date.
 
 use chrono::{TimeDelta, prelude::*};
 use console::{Key, Term};
@@ -12,7 +12,7 @@ use std::{
 static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat\n";
 
 /// Clear the console screen
-pub fn clear_screen() {
+fn clear_screen() {
     if Command::new("cls").status().is_err() {
         Command::new("clear").status().unwrap();
     }
