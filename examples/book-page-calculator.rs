@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use std::io;
 use std::process::Command;
 
-use date_selector::{interactive_date};
+use date_selector::interactive_date;
 
 // Clear the console
 fn clear_screen() {

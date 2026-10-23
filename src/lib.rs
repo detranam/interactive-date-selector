@@ -1,5 +1,5 @@
 //! # Date Selector
-//! 
+//!
 //! This crate provides a cross-platform, CLI-centric, interactive way for a user to select a date.
 
 use chrono::{TimeDelta, prelude::*};
@@ -120,7 +120,7 @@ fn print_month(highlight_day: DateTime<Utc>, error_message: Option<String>) -> S
 }
 
 /// Function to prompt the user to select a date interactively.
-/// 
+///
 /// 'begindate' is the date to initially start the user at. If None, defaults to today.
 /// `preamble` is a &str that will be printed before the month/days. Not used if 'None'.
 pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>) -> DateTime<Utc> {
