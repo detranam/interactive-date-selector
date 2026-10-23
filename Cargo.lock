@@ -131,7 +131,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "interactive-date-selector"
+name = "interactive_date_selector"
 version = "0.1.0"
 dependencies = [
  "chrono",

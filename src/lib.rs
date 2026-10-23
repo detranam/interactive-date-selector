@@ -1,6 +1,6 @@
-///! # Date Selector
-/// 
-/// This crate provides a cross-platform, CLI-centric, interactive way for a user to select a date.
+//! # Date Selector
+//!
+//! This crate provides a cross-platform, CLI-centric, interactive way for a user to select a date.
 
 use chrono::{TimeDelta, prelude::*};
 use console::{Key, Term};
@@ -12,7 +12,7 @@ use std::{
 static DAY_OF_WEEK_STRING: &str = " Sun | Mon | Tue | Wed | Thu | Fri | Sat\n";
 
 /// Clear the console screen
-pub fn clear_screen() {
+fn clear_screen() {
     if Command::new("cls").status().is_err() {
         Command::new("clear").status().unwrap();
     }
@@ -120,9 +120,16 @@ fn print_month(highlight_day: DateTime<Utc>, error_message: Option<String>) -> S
 }
 
 /// Function to prompt the user to select a date interactively.
-/// 
+///
 /// 'begindate' is the date to initially start the user at. If None, defaults to today.
 /// `preamble` is a &str that will be printed before the month/days. Not used if 'None'.
+///
+/// # Examples
+/// ```
+/// let picked_date = interactive_date(None, None);
+/// printf!("Date selected was: {}/{}/{}", picked_date.month(), picked_date.day(), picked_date.year());
+/// ```
+///
 pub fn interactive_date(begindate: Option<DateTime<Utc>>, preamble: Option<&str>) -> DateTime<Utc> {
     let term = Term::stdout();
     let one_day: TimeDelta = TimeDelta::days(1);
