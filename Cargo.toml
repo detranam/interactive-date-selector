@@ -1,11 +1,12 @@
 [package]
 name = "interactive_date_selector"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A simple utility that allows prompting for a date from the command line."
 license = "MIT"
 keywords = ["cli"]
 categories = ["command-line-interface"]
+repository = "https://github.com/detranam/interactive-date-selector"
 
 [lib]
 name = "date_selector"
